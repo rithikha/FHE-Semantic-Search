@@ -1,0 +1,6 @@
+[package]
+name = "zkyellowpages"
+type = "bin"
+authors = [""]
+
+[dependencies]
