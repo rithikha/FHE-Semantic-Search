@@ -1,0 +1,17 @@
+[
+    {
+        "id": "entry1",
+        "name": "Alex",
+        "interests": "Audio engineering, sound design, music production"
+    },
+    {
+        "id": "entry2",
+        "name": "Dana",
+        "interests": "Generative AI, creativity, digital art"
+    },
+    {
+        "id": "entry3",
+        "name": "Taylor",
+        "interests": "Videography, filmmaking, editing"
+    }
+]
