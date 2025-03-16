@@ -1,0 +1,13 @@
+{
+  "latest_version": 2,
+  "v1": {
+    "embeddings_file": "embeddings/embeddings_v1.npy",
+    "indices_file": "embeddings/indices_v1.json",
+    "timestamp": "2025-03-16T19:48:34.661099"
+  },
+  "v2": {
+    "embeddings_file": "embeddings/embeddings_v2.npy",
+    "indices_file": "embeddings/indices_v2.json",
+    "timestamp": "2025-03-16T19:56:38.978462"
+  }
+}

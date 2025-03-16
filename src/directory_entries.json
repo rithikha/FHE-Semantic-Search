@@ -2,16 +2,16 @@
     {
         "id": "entry1",
         "name": "Alex",
-        "interests": "Audio engineering, sound design, music production"
+        "interests": "I like Audio engineering, sound design, music production. I'm often dj-ing on the weekends and like R&B and Electronic soul music"
     },
     {
         "id": "entry2",
         "name": "Dana",
-        "interests": "Generative AI, creativity, digital art"
+        "interests": "I'm an animator who is using generative art tools to create new genres of animated art and storyboarding. Looking to learn more about new ML techniques and touchdesigner"
     },
     {
         "id": "entry3",
         "name": "Taylor",
-        "interests": "Videography, filmmaking, editing"
+        "interests": "I make documentary videos, mostly clients are startups, hackathon events and more recently city explainer videos. I like urbanism"
     }
 ]
