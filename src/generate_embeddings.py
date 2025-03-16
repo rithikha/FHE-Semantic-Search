@@ -91,3 +91,7 @@ print(f"Embeddings version {version} generated, normalized, saved locally, and a
 print(f"Manifest updated: {manifest_file}")
 print(f"Iroh CID: {cid}")
 print(f"Iroh Ticket: {ticket}")
+
+# Automatically run the cleanup script at the very end of your generate_embeddings.py
+print("🔄 Running cleanup_embeddings.py automatically...")
+subprocess.run(["python", "cleanup_embeddings.py"])
