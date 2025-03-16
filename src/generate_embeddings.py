@@ -7,9 +7,9 @@ from sentence_transformers import SentenceTransformer
 from datetime import datetime
 
 # Config
-entries_file = 'directory_entries.json'  
+entries_file = 'src/directory_entries.json'  
 embeddings_dir = 'src/embeddings'
-manifest_file = 'embeddings_manifest.json'
+manifest_file = 'src/embeddings_manifest.json'
 
 # Load Sentence-BERT model
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -94,4 +94,4 @@ print(f"Iroh Ticket: {ticket}")
 
 # Automatically run the cleanup script at the very end of your generate_embeddings.py
 print("🔄 Running cleanup_embeddings.py automatically...")
-subprocess.run(["python", "cleanup_embeddings.py"])
+subprocess.run(["python", "src/cleanup_embeddings.py"])
