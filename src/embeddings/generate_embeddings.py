@@ -9,7 +9,7 @@ from datetime import datetime
 # Config
 entries_file = 'src/directory_entries.json'  
 embeddings_dir = 'src/embeddings'
-manifest_file = 'src/embeddings_manifest.json'
+manifest_file = 'src/embeddings/embeddings_manifest.json'
 
 # Load Sentence-BERT model
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -93,5 +93,5 @@ print(f"Iroh CID: {cid}")
 print(f"Iroh Ticket: {ticket}")
 
 # Automatically run the cleanup script at the very end of your generate_embeddings.py
-print("🔄 Running cleanup_embeddings.py automatically...")
-subprocess.run(["python", "src/cleanup_embeddings.py"])
+print("Running cleanup_embeddings.py automatically...")
+subprocess.run(["python", "src/embeddings/cleanup_embeddings.py"])
