@@ -11,8 +11,8 @@
     "timestamp": "2025-03-16T19:56:38.978462"
   },
   "v3": {
-    "embeddings_file": "src/embeddings/embeddings_v3.npy",
-    "indices_file": "src/embeddings/indices_v3.json",
+    "embeddings_file": "embeddings/embeddings_v3.npy",
+    "indices_file": "embeddings/indices_v3.json",
     "iroh_blob_cid": "d6jtvkekbg5j6v4t4egnwpf3w3zbv7mxipbl3drmkg7lhodqviyq",
     "iroh_ticket": "blobacw4v3kesexwxjdokonxgx7zvm7g6qgo2s3bch5pv33nbqvsvjoniajdnb2hi4dthixs6ylqomys2mjoojswyylzfzuxe33ifzxgk5dxn5zgwlrpamaadi3v3tcfoagavaawl6vaaiambkcehtcfoaa7sm5krcqjxkpvpe7bbtntzo5w6inp3f2dyk6y4lcrx2z3q4fkge",
     "timestamp": "2025-03-16T22:32:04.178745"

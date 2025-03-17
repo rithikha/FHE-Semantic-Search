@@ -18,59 +18,54 @@
         <label> Interest:
             <input type="text" id="interest" required />
         </label><br />
+        <br>
         <button type="submit">Submit</button>
     </form>
+</body>
+<br>
+<br>
 
-    <!-- Form to search for an interest match -->
-    <h2>Find a Matching Interest</h2>
-    <form id="searchForm">
-        <label> Interest to search:
-            <input type="text" id="searchInterest" required />
-        </label>
-        <button type="submit">Search</button>
-    </form>
+</html>
+<!-- Explicitly match input and fields -->
+<input type="text" id="searchBox" placeholder="Enter interest here..." />
+<button id="searchBtn">Search</button>
 
-    <!-- display results -->
-    <div id="results"></div>
+<!-- Display results -->
 
-    <script>
-        // JavaScript to handle form submissions
-        const registerForm = document.getElementById('registerForm');
-        const searchForm = document.getElementById('searchForm');
+<div id="results"></div>
+
+<script>
+    document.getElementById('searchBtn').onclick = function () {
+        const query = document.getElementById('searchBox').value.trim();
         const resultsDiv = document.getElementById('results');
+        resultsDiv.innerHTML = "Searching...";
 
-        registerForm.onsubmit = async function (e) {
-            e.preventDefault();
-            resultsDiv.textContent = "";  // clear previous results
-            const name = document.getElementById('name').value;
-            const interest = document.getElementById('interest').value;
-            // TODO:
-            // 1. Compute interest_hash = hash(interest)
-            // 2. Generate Noir ZK proof that user has this interest
-            // 3. Store profile (name + interest_hash) via Iroh
-            // simulate and inform the user:
-            alert(`Hello ${name}! We would generate a proof for "${interest}" and store it in the directory.`);
-            // (Could call an API here to do the actual steps on the server/backend)
-        };
+        fetch(`http://localhost:5000/search?q=${encodeURIComponent(query)}`)
+            .then(resp => resp.json())
+            .then(data => {
+                resultsDiv.innerHTML = '';
 
-        searchForm.onsubmit = async function (e) {
-            e.preventDefault();
-            resultsDiv.textContent = "";
-            const interestQuery = document.getElementById('searchInterest').value;
-            // TODO:
-            // 1. Compute hash = hash(interestQuery)
-            // 2. Query Iroh for data by that hash
-            // 3. Verify any proof from the data (Noir verify)
-            // 4. Return matching profiles
-            // Simulate by fetching a static file or using a placeholder:
-            // assuming interestQuery "music" returns Alice.
-            if (interestQuery.toLowerCase() === "music") {
-                resultsDiv.textContent = "Match found! Alice is interested in 🎵 music.";
-            } else {
-                resultsDiv.textContent = "No matches found for " + interestQuery;
-            }
-        };
-    </script>
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+                    return;
+                }
+
+                if (data.results.length === 0) {
+                    resultsDiv.innerHTML = "<p>No matches found.</p>";
+                    return;
+                }
+
+                data.results.forEach(entry => {
+                    resultsDiv.innerHTML += `<p><strong>${entry.name}</strong>: ${entry.interests} <em>(Similarity: ${entry.score})</em></p>`;
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                resultsDiv.innerHTML = '<p>Error fetching results from server.</p>';
+            });
+    };
+</script>
+
 </body>
 
 </html>

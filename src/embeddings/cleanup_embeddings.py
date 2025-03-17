@@ -3,7 +3,7 @@ import json
 import subprocess
 
 # Configuration
-EMBEDDINGS_MANIFEST = 'embeddings_manifest.json'
+EMBEDDINGS_MANIFEST = 'src/embeddings/embeddings_manifest.json'
 MAX_VERSIONS_TO_KEEP = 2
 
 # Load manifest
