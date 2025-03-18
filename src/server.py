@@ -4,14 +4,12 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 import json
 
-# Initialize Flask clearly only once
+# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Load embeddings manifest and embeddings at startup (once)
-manifest_path = 'embeddings/embeddings_manifest.json'
-
-with open(manifest_path, 'r') as f:
+# Load embeddings manifest once at startup
+with open('embeddings/embeddings_manifest.json', 'r') as f:
     manifest = json.load(f)
 
 latest_version = manifest["latest_version"]
@@ -23,14 +21,14 @@ embeddings = np.load(embeddings_file)
 with open(indices_file, 'r') as f:
     entry_ids = json.load(f)["ids"]
 
-# Normalize embeddings
+# Normalize embeddings for efficient similarity search
 embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
 
-# Load directory entries at startup
+# Load directory entries once at startup
 with open('directory_entries.json', 'r') as f:
     entries = json.load(f)
 
-# Load model at startup
+# Initialize SentenceTransformer model once
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 @app.route('/search', methods=['GET'])
@@ -39,14 +37,14 @@ def search():
     if not user_query:
         return jsonify({"error": "No query provided"}), 400
 
-    # Encode and normalize query
+    # Encode and normalize the user's query
     query_vec = model.encode(user_query)
     query_vec /= np.linalg.norm(query_vec)
 
-    # Compute similarities
+    # Compute cosine similarities with stored embeddings
     similarities = np.dot(embeddings, query_vec)
 
-    # Top 3 matches
+    # Get top 3 closest matches
     top_k = 3
     top_indices = similarities.argsort()[::-1][:top_k]
 

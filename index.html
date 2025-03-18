@@ -38,7 +38,7 @@
 
         async function loadEmbeddingModel() {
             extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { dtype: 'q8' });
-            console.log('Sentence-BERT model loaded.');
+            console.log('Sentence-BERT model loaded.'); // testing
         }
 
         document.addEventListener('DOMContentLoaded', loadEmbeddingModel);
@@ -51,7 +51,7 @@
             const embeddings = await extractor(query);
             const embeddingVector = embeddings[0];
 
-            console.log(embeddingVector);  // For testing
+            console.log(embeddingVector);  // testing
             resultsDiv.innerHTML = `<p>Embedding generated successfully (see console).</p>`;
 
             fetch(`http://localhost:5000/search?q=${encodeURIComponent(query)}`)
