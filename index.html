@@ -21,50 +21,65 @@
         <br>
         <button type="submit">Submit</button>
     </form>
-</body>
-<br>
-<br>
 
-</html>
-<!-- Explicitly match input and fields -->
-<input type="text" id="searchBox" placeholder="Enter interest here..." />
-<button id="searchBtn">Search</button>
+    <br><br>
 
-<!-- Display results -->
+    <!-- Search Box -->
+    <input type="text" id="searchBox" placeholder="Enter interest here..." />
+    <button id="searchBtn">Search</button>
 
-<div id="results"></div>
+    <!-- Display results -->
+    <div id="results"></div>
 
-<script>
-    document.getElementById('searchBtn').onclick = function () {
-        const query = document.getElementById('searchBox').value.trim();
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = "Searching...";
+    <script type="module">
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0';
 
-        fetch(`http://localhost:5000/search?q=${encodeURIComponent(query)}`)
-            .then(resp => resp.json())
-            .then(data => {
-                resultsDiv.innerHTML = '';
+        let extractor;
 
-                if (data.error) {
-                    resultsDiv.innerHTML = `<p>Error: ${data.error}</p>`;
-                    return;
-                }
+        async function loadEmbeddingModel() {
+            extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { dtype: 'q8' });
+            console.log('Sentence-BERT model loaded.');
+        }
 
-                if (data.results.length === 0) {
-                    resultsDiv.innerHTML = "<p>No matches found.</p>";
-                    return;
-                }
+        document.addEventListener('DOMContentLoaded', loadEmbeddingModel);
 
-                data.results.forEach(entry => {
-                    resultsDiv.innerHTML += `<p><strong>${entry.name}</strong>: ${entry.interests} <em>(Similarity: ${entry.score})</em></p>`;
+        document.getElementById('searchBtn').onclick = async function () {
+            const query = document.getElementById('searchBox').value.trim();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = "Generating embedding...";
+
+            const embeddings = await extractor(query);
+            const embeddingVector = embeddings[0];
+
+            console.log(embeddingVector);  // For testing
+            resultsDiv.innerHTML = `<p>Embedding generated successfully (see console).</p>`;
+
+            fetch(`http://localhost:5000/search?q=${encodeURIComponent(query)}`)
+                .then(resp => resp.json())
+                .then(data => {
+                    resultsDiv.innerHTML = '';
+
+                    if (data.error) {
+                        resultsDiv.innerHTML = `<p>Error: ${data.error}</p>`;
+                        return;
+                    }
+
+                    if (data.results.length === 0) {
+                        resultsDiv.innerHTML = "<p>No matches found.</p>";
+                        return;
+                    }
+
+                    data.results.forEach(entry => {
+                        resultsDiv.innerHTML += `<p><strong>${entry.name}</strong>: ${entry.interests} <em>(Similarity: ${entry.score})</em></p>`;
+                    });
+                })
+                .catch(err => {
+                    console.error(err);
+                    resultsDiv.innerHTML = '<p>Error fetching results from server.</p>';
                 });
-            })
-            .catch(err => {
-                console.error(err);
-                resultsDiv.innerHTML = '<p>Error fetching results from server.</p>';
-            });
-    };
-</script>
+        };
+    </script>
+
 
 </body>
 
