@@ -45,6 +45,7 @@
         document.getElementById('searchBtn').onclick = async function () {
             const query = document.getElementById('searchBox').value.trim();
             const resultsDiv = document.getElementById('results');
+
             if (!query) {
                 resultsDiv.textContent = 'Please enter a search query.';
                 return;
@@ -53,36 +54,27 @@
             resultsDiv.textContent = 'Generating embedding...';
 
             const embeddings = await extractor(query);
-            const embeddingVector = Array.from(embeddings[0].data); // fixed conversion
+            const embeddingVector = Array.from(embeddings[0].data);
 
             resultsDiv.textContent = 'Encrypting embedding...';
 
             const encryptedEmbedding = await encryptEmbeddingWithWASM(embeddingVector);
 
-            resultsDiv.textContent = 'Storing encrypted embedding in Iroh...';
+            resultsDiv.textContent = 'Downloading encrypted embedding...';
 
-            // Send to backend Python server to store in Iroh
-            fetch("http://localhost:5000/store_embedding", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/octet-stream"
-                },
-                body: encryptedEmbedding
-            })
-                .then(resp => resp.json())
-                .then(data => {
-                    if (data.error) {
-                        resultsDiv.textContent = "Error storing embedding: " + data.error;
-                    } else {
-                        resultsDiv.textContent = "Successfully stored embedding. CID: " + data.cid;
-                        console.log("CID stored:", data.cid);
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    resultsDiv.textContent = "Error communicating with backend.";
-                });
+            // Corrected blob download explicitly here:
+            const blob = new Blob([encryptedEmbedding], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'encrypted_query.bin';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            resultsDiv.textContent = 'Encrypted embedding downloaded as encrypted_query.bin';
         };
+
 
         // Helper to call Go WASM encryption function
         async function encryptEmbeddingWithWASM(vector) {
