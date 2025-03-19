@@ -52,23 +52,36 @@
 
             resultsDiv.textContent = 'Generating embedding...';
 
-            // Generate embedding
             const embeddings = await extractor(query);
-            //const embeddingVector = embeddings[0];
-            // convert tensor output explicitly to regular JS array
-            const embeddingVector = Array.from(embeddings[0].data);
+            const embeddingVector = Array.from(embeddings[0].data); // fixed conversion
 
-
-            console.log('Embedding Vector:', embeddingVector);
-
-            // Encrypt embedding using Go WASM function
             resultsDiv.textContent = 'Encrypting embedding...';
 
-            // Calling the Go WASM exported function
             const encryptedEmbedding = await encryptEmbeddingWithWASM(embeddingVector);
-            console.log('Encrypted embedding:', encryptedEmbedding);
 
-            resultsDiv.textContent = 'Embedding encrypted successfully (see console).';
+            resultsDiv.textContent = 'Storing encrypted embedding in Iroh...';
+
+            // Send to backend Python server to store in Iroh
+            fetch("http://localhost:5000/store_embedding", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/octet-stream"
+                },
+                body: encryptedEmbedding
+            })
+                .then(resp => resp.json())
+                .then(data => {
+                    if (data.error) {
+                        resultsDiv.textContent = "Error storing embedding: " + data.error;
+                    } else {
+                        resultsDiv.textContent = "Successfully stored embedding. CID: " + data.cid;
+                        console.log("CID stored:", data.cid);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    resultsDiv.textContent = "Error communicating with backend.";
+                });
         };
 
         // Helper to call Go WASM encryption function

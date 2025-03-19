@@ -1,68 +1,44 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from sentence_transformers import SentenceTransformer
-import numpy as np
-import json
+import subprocess
+import tempfile
+import os
 
-# Initialize Flask app
 app = Flask(__name__)
 CORS(app)
 
-# Load embeddings manifest once at startup
-with open('embeddings/embeddings_manifest.json', 'r') as f:
-    manifest = json.load(f)
+@app.route('/store_embedding', methods=['POST'])
+def store_embedding():
+    encrypted_embedding = request.data  # Get raw binary data from request
 
-latest_version = manifest["latest_version"]
-embeddings_file = manifest[f"v{latest_version}"]["embeddings_file"]
-indices_file = manifest[f"v{latest_version}"]["indices_file"]
+    if not encrypted_embedding:
+        return jsonify({"error": "No data received"}), 400
 
-# Load embeddings and entry IDs
-embeddings = np.load(embeddings_file)
-with open(indices_file, 'r') as f:
-    entry_ids = json.load(f)["ids"]
+    try:
+        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+            tmp_file.write(encrypted_embedding)
+            tmp_file_path = tmp_file.name
 
-# Normalize embeddings for efficient similarity search
-embeddings = embeddings / np.linalg.norm(embeddings, axis=1, keepdims=True)
+        # Store embedding in Iroh using CLI
+        result = subprocess.run(
+            ["iroh", "blobs", "add", tmp_file_path],
+            capture_output=True,
+            text=True
+        )
 
-# Load directory entries once at startup
-with open('directory_entries.json', 'r') as f:
-    entries = json.load(f)
+        if result.returncode != 0:
+            return jsonify({"error": "Iroh storage failed", "details": result.stderr}), 500
 
-# Initialize SentenceTransformer model once
-model = SentenceTransformer('all-MiniLM-L6-v2')
+        cid = result.stdout.strip()  # Iroh returns CID here
 
-@app.route('/search', methods=['GET'])
-def search():
-    user_query = request.args.get('q', default="", type=str)
-    if not user_query:
-        return jsonify({"error": "No query provided"}), 400
+        # Clean up temporary file
+        os.remove(tmp_file_path)
 
-    # Encode and normalize the user's query
-    query_vec = model.encode(user_query)
-    query_vec /= np.linalg.norm(query_vec)
+        # Return CID to frontend
+        return jsonify({"cid": cid})
 
-    # Compute cosine similarities with stored embeddings
-    similarities = np.dot(embeddings, query_vec)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-    # Get top 3 closest matches
-    top_k = 3
-    top_indices = similarities.argsort()[::-1][:top_k]
-
-    results = []
-    for idx in top_indices:
-        entry = entries[idx]
-        results.append({
-            "id": entry_ids[idx],
-            "name": entry["name"],
-            "interests": entry["interests"],
-            "score": round(float(similarities[idx]), 4)
-        })
-
-    return jsonify({"query": user_query, "results": results})
-
-@app.route('/')
-def serve_frontend():
-    return send_from_directory('.', 'index.html')
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(port=5000, debug=True)
