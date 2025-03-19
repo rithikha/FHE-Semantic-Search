@@ -3,84 +3,91 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>ZK Yellowpages</title>
+    <title>ZK Yellowpages with Encryption</title>
 </head>
 
 <body>
-    <h1>A Privacy-Preserving Directory. Discover your network, privately.</h1>
+    <h1>Privacy-Preserving Directory with FHE Encryption</h1>
 
-    <!-- Form to register an interest -->
-    <h2>Register Your Interest</h2>
-    <form id="registerForm">
-        <label> Name (or Alias):
-            <input type="text" id="name" required />
-        </label><br />
-        <label> Interest:
-            <input type="text" id="interest" required />
-        </label><br />
-        <br>
-        <button type="submit">Submit</button>
-    </form>
-
-    <br><br>
-
-    <!-- Search Box -->
+    <!-- Form to search -->
     <input type="text" id="searchBox" placeholder="Enter interest here..." />
     <button id="searchBtn">Search</button>
-
-    <!-- Display results -->
     <div id="results"></div>
 
+    <script src="wasm_exec.js"></script>
     <script type="module">
         import { pipeline } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.0.0';
 
-        let extractor;
+        let extractor, go, wasmInstance;
 
+        // Load Sentence-BERT embedding model
         async function loadEmbeddingModel() {
             extractor = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', { dtype: 'q8' });
-            console.log('Sentence-BERT model loaded.'); // testing
+            console.log('Sentence-BERT model loaded.');
         }
 
-        document.addEventListener('DOMContentLoaded', loadEmbeddingModel);
+        // Load Go WASM Module
+        async function loadWasmModule() {
+            go = new Go();
+            const wasmResponse = await fetch('main.wasm');
+            const wasmBytes = await wasmResponse.arrayBuffer();
+            const { instance } = await WebAssembly.instantiate(wasmBytes, go.importObject);
+            wasmInstance = instance;
+            go.run(wasmInstance);
+            console.log('Go WASM module loaded.');
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadEmbeddingModel();
+            await loadWasmModule();
+        });
 
         document.getElementById('searchBtn').onclick = async function () {
             const query = document.getElementById('searchBox').value.trim();
             const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = "Generating embedding...";
+            if (!query) {
+                resultsDiv.textContent = 'Please enter a search query.';
+                return;
+            }
 
+            resultsDiv.textContent = 'Generating embedding...';
+
+            // Generate embedding
             const embeddings = await extractor(query);
-            const embeddingVector = embeddings[0];
+            //const embeddingVector = embeddings[0];
+            // convert tensor output explicitly to regular JS array
+            const embeddingVector = Array.from(embeddings[0].data);
 
-            console.log(embeddingVector);  // testing
-            resultsDiv.innerHTML = `<p>Embedding generated successfully (see console).</p>`;
 
-            fetch(`http://localhost:5000/search?q=${encodeURIComponent(query)}`)
-                .then(resp => resp.json())
-                .then(data => {
-                    resultsDiv.innerHTML = '';
+            console.log('Embedding Vector:', embeddingVector);
 
-                    if (data.error) {
-                        resultsDiv.innerHTML = `<p>Error: ${data.error}</p>`;
-                        return;
-                    }
+            // Encrypt embedding using Go WASM function
+            resultsDiv.textContent = 'Encrypting embedding...';
 
-                    if (data.results.length === 0) {
-                        resultsDiv.innerHTML = "<p>No matches found.</p>";
-                        return;
-                    }
+            // Calling the Go WASM exported function
+            const encryptedEmbedding = await encryptEmbeddingWithWASM(embeddingVector);
+            console.log('Encrypted embedding:', encryptedEmbedding);
 
-                    data.results.forEach(entry => {
-                        resultsDiv.innerHTML += `<p><strong>${entry.name}</strong>: ${entry.interests} <em>(Similarity: ${entry.score})</em></p>`;
-                    });
-                })
-                .catch(err => {
-                    console.error(err);
-                    resultsDiv.innerHTML = '<p>Error fetching results from server.</p>';
-                });
+            resultsDiv.textContent = 'Embedding encrypted successfully (see console).';
         };
+
+        // Helper to call Go WASM encryption function
+        async function encryptEmbeddingWithWASM(vector) {
+            return new Promise((resolve, reject) => {
+                // Convert JS array to JSON string
+                const vectorJSON = JSON.stringify(vector);
+
+                // Call Go WASM encryption function (window.encryptVector)
+                const cipherArray = window.encryptVector(vectorJSON);
+
+                if (cipherArray instanceof Uint8Array) {
+                    resolve(cipherArray);
+                } else {
+                    reject('Encryption failed: ' + cipherArray);
+                }
+            });
+        }
     </script>
-
-
 </body>
 
 </html>
