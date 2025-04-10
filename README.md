@@ -81,9 +81,9 @@ http://localhost:5000
 
 - **Frontend:** HTML + WebAssembly
 - **Embeddings:** Xenova transformers (browser-side Sentence-BERT)
-- **Encryption:** CKKS via Lattigo
+- **Encryption:** CKKS via Lattigo v5
 - **Storage:** Iroh decentralized storage
-- **Backend:** Go, Gin web framework
+- **Backend:** Go + Gin web framework
 
 ---
 
@@ -95,7 +95,7 @@ http://localhost:5000
 
 ---
 
-## Thank You's
+## Thank You
 
 Many people to thank in the making of this project: Micah, Ayush, Vivek, Anka, Emma and the rest of the CPR team and friends
 
