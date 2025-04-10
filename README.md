@@ -1,4 +1,4 @@
-# Privacy-Preserving Semantic Search [In-Progress]
+# Privacy-Preserving Semantic Search 
 
 FSS is a prototype demonstrating a privacy-preserving semantic search system using Fully Homomorphic Encryption (FHE), specifically the CKKS scheme via Lattigo, combined with decentralized storage via Iroh. This project aims to match user queries with directory entries based on semantic similarity without revealing either the queries or the directory content.
 
