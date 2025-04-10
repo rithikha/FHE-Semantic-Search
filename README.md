@@ -77,7 +77,7 @@ http://localhost:5000
 
 ---
 
-## 🛠 Technologies Used
+## Technologies Used
 
 - **Frontend:** HTML + WebAssembly
 - **Embeddings:** Xenova transformers (browser-side Sentence-BERT)
