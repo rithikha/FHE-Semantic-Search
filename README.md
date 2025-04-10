@@ -89,7 +89,7 @@ http://localhost:5000
 
 ## TODO / Future Improvements 
 
-- Multi-party integration 
+- Multi-party functionality (currently implementation is single-key FHE) 
 - Matching only if both parties consent
 - Integration of Zero-Knowledge proofs (e.g., Noir) for additional verification of skillset, credentials, etc
 
