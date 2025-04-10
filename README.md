@@ -25,7 +25,7 @@ FSS is a prototype demonstrating a privacy-preserving semantic search system usi
    - Optionally, the client decrypts and ranks these scores locally.
 
 
-# Running the FSS Project
+# How to Run Locally
 
 ### 1. Install Dependencies
 
